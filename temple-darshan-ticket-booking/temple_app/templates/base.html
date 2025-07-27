@@ -1,0 +1,58 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Temple Ticket Booking{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand">
+                <a href="{% url 'home' %}">Darshan Ticket</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'temple_list' %}">Temples</a></li> {# Assuming you have a 'temple_list' URL name #}
+                
+                {# General/Information Links - visible to ALL users #}
+                <li><a href="{% url 'donations' %}">Donations</a></li>
+                <li><a href="{% url 'about_us' %}">About Us</a></li>   {# CHANGE THIS LINE: from 'about' to 'about_us' #}
+                <li><a href="{% url 'contact_us' %}">Contact Us</a></li> {# CHANGE THIS LINE: from 'contact' to 'contact_us' #}
+                <li><a href="{% url 'faq' %}">Help/FAQ</a></li>
+    
+                {# User-specific links - conditional based on authentication status #}
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'my_bookings' %}">My Bookings</a></li>
+                    {% if user.is_staff or user.is_superuser %}
+                        <li><a href="{% url 'add_temple' %}">Add Temple</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+
+
+    <footer>
+        <p>© 2025 Temple Ticket Booking. All rights reserved.</p>
+    </footer>
+</body>
+</html>

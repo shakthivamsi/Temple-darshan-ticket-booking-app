@@ -1,0 +1,66 @@
+<!-- templates/temple_app/home.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome to Temple Tickets{% endblock %}
+
+{% block content %}
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1>Embark on a Spiritual Journey</h1>
+            <p>Discover divine temples and book your visit with ease.</p>
+            {# Link the hero button to the featured temples section ID #}
+            <a href="#featured-temples-section" class="btn hero-btn">Explore Temples</a>
+        </div>
+    </div>
+
+    <section class="section other-gods-section">
+        <h2>Embrace the Divine Presence</h2>
+        <div class="god-images-grid">
+            <div class="god-image-item">
+                <img src="{% static 'images/lordshiva.jpg' %}" alt="Lord Shiva">
+                <p>Lord Shiva</p>
+            </div>
+            <div class="god-image-item">
+                <img src="{% static 'images/goddessparvati.jpg' %}" alt="Goddess Parvati">
+                <p>Goddess Parvati</p>
+            </div>
+            <div class="god-image-item">
+                <img src="{% static 'images/lordvishnu.jpg' %}" alt="Lord Vishnu">
+                <p>Lord Vishnu</p>
+            </div>
+            <div class="god-image-item">
+                <img src="{% static 'images/goddesslakshmi.jpg' %}" alt="Goddess Lakshmi">
+                <p>Goddess lakshmi</p>
+            </div>
+        </div>
+    </section>
+
+    {# Add an ID to the section containing the temple list #}
+    <section class="section featured-temples-section" id="featured-temples-section">
+        <h2>Featured Temples</h2>
+        {% if temples %}
+            <div class="temple-list">
+                {% for temple in temples %}
+                    <div class="temple-card">
+                        {% if temple.image %}
+                            <img src="{{ temple.image.url }}" alt="{{ temple.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default_temple.jpg' %}" alt="Default Temple Image">
+                        {% endif %}
+                        <h3><a href="{% url 'temple_detail' temple.pk %}">{{ temple.name }}</a></h3>
+                        <p>{{ temple.location }}</p>
+                        <p>{{ temple.description|truncatechars:100 }}</p>
+                        <a href="{% url 'temple_detail' temple.pk %}" class="btn">View Details</a>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="text-center" style="margin-top: 30px;">
+                {# Link the "View All Temples" button to the same section ID #}
+                <a href="#featured-temples-section" class="btn">View All Temples</a>
+            </div>
+        {% else %}
+            <p style="text-align: center;">No temples listed yet. Please add some through the <a href="{% url 'admin:index' %}">admin panel</a>.</p>
+        {% endif %}
+    </section>
+{% endblock %}

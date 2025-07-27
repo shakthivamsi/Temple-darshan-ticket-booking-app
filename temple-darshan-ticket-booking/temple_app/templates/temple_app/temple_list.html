@@ -1,0 +1,26 @@
+<!-- templates/temple_app/temple_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Temples{% endblock %}
+
+{% block content %}
+    <h1>All Temples</h1>
+    <div class="temple-list">
+        {% for temple in temples %}
+            <div class="temple-card">
+                {% if temple.image %}
+                    <img src="{{ temple.image.url }}" alt="{{ temple.name }}">
+                {% else %}
+                    <img src="{% static 'images/default_temple.jpg' %}" alt="Default Temple Image">
+                {% endif %}
+                <h3><a href="{% url 'temple_detail' temple.pk %}">{{ temple.name }}</a></h3>
+                <p>{{ temple.location }}</p>
+                <p>{{ temple.description|truncatechars:100 }}</p>
+                <a href="{% url 'temple_detail' temple.pk %}" class="btn">View Details</a>
+            </div>
+        {% empty %}
+            <p>No temples listed yet. Please add some through the <a href="{% url 'admin:index' %}">admin panel</a> or <a href="{% url 'add_temple' %}">add temple form</a>.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

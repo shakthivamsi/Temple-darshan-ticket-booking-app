@@ -1,0 +1,36 @@
+<!-- templates/temple_app/create_booking.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Book Tickets{% endblock %}
+
+{% block content %}
+    <h1>Book Tickets for {{ ticket_type.temple.name }} - {{ ticket_type.name }}</h1>
+    <div class="booking-form-container">
+        <p><strong>Price per ticket:</strong> ₹<span id="ticketPrice">{{ ticket_type.price }}</span></p> {# <-- CHANGED HERE ($ to ₹) #}
+        <p><strong>Available tickets:</strong> {{ ticket_type.available_tickets }}</p>
+
+        {% if ticket_type.available_tickets > 0 %}
+            <form method="post" id="bookingForm">
+                {% csrf_token %}
+                <p>
+                    <label for="{{ form.quantity.id_for_label }}">Quantity:</label>
+                    {{ form.quantity }}
+                </p>
+                <p>
+                    <label for="{{ form.visit_date.id_for_label }}">Visit Date:</label>
+                    {{ form.visit_date }}
+                </p>
+
+                <p><strong>Total Payment:</strong> ₹<span id="totalPrice">0.00</span></p> {# <-- CHANGED HERE ($ to ₹) #}
+
+                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+            </form>
+        {% else %}
+            <p class="sold-out">This ticket type is currently sold out.</p>
+        {% endif %}
+        <p><a href="{% url 'temple_detail' ticket_type.temple.pk %}" class="btn btn-secondary">Back to Temple</a></p>
+    </div>
+
+    <script src="{% static 'js/booking_price.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!-- templates/temple_app/temple_detail.html -->
+{% extends 'base.html' %}
+{% load static %} {# Ensure this is at the top if you use static files #}
+
+{% block title %}{{ temple.name }} Details{% endblock %}
+
+{% block content %}
+    <div class="temple-detail-container">
+        <h1>{{ temple.name }}</h1>
+        {% if temple.image %}
+            <img src="{{ temple.image.url }}" alt="{{ temple.name }}" class="temple-detail-img">
+        {% else %}
+            <img src="{% static 'images/default_temple.jpg' %}" alt="Default Temple Image" class="temple-detail-img">
+        {% endif %}
+        <p><strong>Location:</strong> {{ temple.location }}</p>
+        <p><strong>Established:</strong> {{ temple.established_date|default:"N/A" }}</p>
+        <p><strong>Description:</strong> {{ temple.description }}</p>
+
+        <h2>Available Ticket Types</h2>
+        {% if ticket_types %}
+            <div class="ticket-types-list">
+                {% for ticket_type in ticket_types %}
+                    <div class="ticket-type-card">
+                        <h3>{{ ticket_type.name }}</h3>
+                        <p><strong>Price:</strong> ${{ ticket_type.price }}</p>
+                        <p>{{ ticket_type.description|default:"No description available." }}</p>
+                        <p><strong>Available:</strong> {{ ticket_type.available_tickets }}</p>
+                        {% if ticket_type.available_tickets > 0 %}
+                            <a href="{% url 'create_booking' ticket_type.pk %}" class="btn">Book Now</a>
+                        {% else %}
+                            <p class="sold-out">Sold Out</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {# Improved message for clarity #}
+            <p style="text-align: center;">No ticket types available for this temple yet. Please add them via the <a href="{% url 'admin:index' %}">admin panel</a>.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,33 @@
+<!-- templates/temple_app/my_bookings.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+    <h1>My Bookings</h1>
+    {% if bookings %}
+        <div class="booking-list">
+            {% for booking in bookings %}
+                <div class="booking-card">
+                    <h3>Booking ID: {{ booking.id }}</h3>
+                    <p><strong>Temple:</strong> {{ booking.ticket_type.temple.name }}</p>
+                    <p><strong>Ticket Type:</strong> {{ booking.ticket_type.name }}</p>
+                    <p><strong>Quantity:</strong> {{ booking.quantity }}</p>
+                    <p><strong>Total Price:</strong> ${{ booking.total_price }}</p>
+                    <p><strong>Booking Date:</strong> {{ booking.booking_date|date:"F d, Y H:i" }}</p>
+                    <p><strong>Status:</strong> <span class="status-{{ booking.status }}">{{ booking.status|capfirst }}</span></p>
+                    
+                    {% if booking.status == 'confirmed' %}
+                        <form action="{% url 'cancel_booking' booking.pk %}" method="post" onsubmit="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You have no bookings yet. <a href="{% url 'home' %}">Start exploring temples!</a></p>
+    {% endif %}
+{% endblock %}

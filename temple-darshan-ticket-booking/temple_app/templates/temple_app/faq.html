@@ -1,0 +1,27 @@
+<!-- templates/temple_app/faq.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help/FAQ{% endblock %}
+
+{% block content %}
+    <h1>Help & Frequently Asked Questions</h1>
+    <div class="static-content faq-section">
+        <div class="faq-item">
+            <h3>Q: How do I book a ticket?</h3>
+            <p>A: Browse through our list of temples, select the temple you wish to visit, choose your preferred ticket type and quantity, and proceed to book. You'll need to be logged in to complete a booking.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Q: Can I cancel my booking?</h3>
+            <p>A: Currently, our system does not support direct cancellations through the website. Please contact our support team via the 'Contact Us' page for assistance with cancellations.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Q: What if I don't receive my booking confirmation?</h3>
+            <p>A: First, check your spam/junk folder. If you still can't find it, please go to 'My Bookings' to view your confirmed bookings. If it's not there, contact our support team.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Q: Are all temples listed on your platform?</h3>
+            <p>A: We are continuously expanding our network. While we strive to include a wide range of temples, not all might be available yet. If you have a suggestion, please let us know!</p>
+        </div>
+    </div>
+{% endblock %}

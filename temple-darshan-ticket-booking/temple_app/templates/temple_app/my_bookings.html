@@ -1,0 +1,29 @@
+<!-- templates/temple_app/my_bookings.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+    <h1>My Bookings</h1>
+    {% if bookings %}
+        <div class="booking-list">
+            {% for booking in bookings %}
+                <div class="booking-card">
+                    <h3>Booking ID: {{ booking.id }}</h3>
+                    <p><strong>Temple:</strong> {{ booking.ticket_type.temple.name }}</p>
+                    <p><strong>Ticket Type:</strong> {{ booking.ticket_type.name }}</p>
+                    <p><strong>Quantity:</strong> {{ booking.quantity }}</p>
+                    <p><strong>Visit Date:</strong> {{ booking.visit_date|date:"F d, Y" }}</p>
+                    <p><strong>Total Price:</strong> ₹{{ booking.total_price }}</p> {# <-- CHANGED HERE ($ to ₹) #}
+                    <p><strong>Booking Placed On:</strong> {{ booking.booking_date|date:"F d, Y H:i" }}</p>
+                    <p><strong>Status:</strong> <span class="status-{{ booking.status }}">{{ booking.status|capfirst }}</span></p>
+                </div>
+            {% empty %}
+                <p>You have no bookings yet. <a href="{% url 'home' %}">Start exploring temples!</a></p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You have no bookings yet. <a href="{% url 'home' %}">Start exploring temples!</a></p>
+    {% endif %}
+{% endblock %}

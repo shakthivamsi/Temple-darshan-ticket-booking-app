@@ -1,0 +1,216 @@
+<!-- temple_app/templates/temple_app/donations.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Support Our Temples{% endblock %}
+
+{% block content %}
+    <h1>Make a Donation</h1>
+    <div class="donation-container">
+        <div class="donation-form-section">
+            <p>Your generous contributions help maintain the temples and support spiritual activities.</p>
+            <form id="donation-form" method="post" action="{% url 'api_create_donation' %}">
+                {% csrf_token %}
+                <div class="form-fields">
+                    {# Render individual fields for better control and error display #}
+                    <p>
+                        {{ form.amount.label_tag }}
+                        {{ form.amount }}
+                        {% if form.amount.help_text %}
+                            <span class="helptext">{{ form.amount.help_text }}</span>
+                        {% endif %}
+                        {% for error in form.amount.errors %}
+                            <span class="errorlist">{{ error }}</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.donor_name.label_tag }}
+                        {{ form.donor_name }}
+                        {% if form.donor_name.help_text %}
+                            <span class="helptext">{{ form.donor_name.help_text }}</span>
+                        {% endif %}
+                        {% for error in form.donor_name.errors %}
+                            <span class="errorlist">{{ error }}</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.message.label_tag }}
+                        {{ form.message }}
+                        {% if form.message.help_text %}
+                            <span class="helptext">{{ form.message.help_text }}</span>
+                        {% endif %}
+                        {% for error in form.message.errors %}
+                            <span class="errorlist">{{ error }}</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.is_anonymous }} {{ form.is_anonymous.label_tag }}
+                        {% if form.is_anonymous.help_text %}
+                            <span class="helptext">{{ form.is_anonymous.help_text }}</span>
+                        {% endif %}
+                        {% for error in form.is_anonymous.errors %}
+                            <span class="errorlist">{{ error }}</span>
+                        {% endfor %}
+                    </p>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="errorlist non-field-errors">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Donate Now</button>
+            </form>
+            <div id="form-messages" style="display: none;"></div> {# For AJAX success/error messages #}
+        </div>
+
+        <div class="donation-stats-section">
+            <h2>Donation Progress</h2>
+            <div class="total-donations">
+                <h3>Total Donations:</h3>
+                <p class="amount" id="total-donations">₹{{ total_donations|floatformat:2 }}</p> {# CHANGE HERE #}
+            </div>
+
+            <div class="recent-donations">
+                <h3>Recent Donations:</h3>
+                <ul id="recent-donations-list">
+                    {% for donation in recent_donations %}
+                        <li>
+                            <strong>₹{{ donation.amount|floatformat:2 }}</strong> by {# CHANGE HERE #}
+                            {% if donation.is_anonymous %}
+                                Anonymous
+                            {% else %}
+                                {{ donation.donor_name|default:donation.user.username|default:"N/A" }}
+                            {% endif %}
+                            <span class="donation-timestamp">({{ donation.timestamp|date:"M d, Y H:i" }})</span>
+                            {% if donation.message %}<br><small>"{{ donation.message|truncatechars:50 }}"</small>{% endif %}
+                        </li>
+                    {% empty %}
+                        <li>No recent donations yet. Be the first!</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for AJAX form submission and real-time updates
+        const donationForm = document.getElementById('donation-form');
+        const formMessagesDiv = document.getElementById('form-messages');
+        const totalDonationsElem = document.getElementById('total-donations');
+        const recentDonationsList = document.getElementById('recent-donations-list');
+
+        function displayFormMessage(message, type) {
+            formMessagesDiv.style.display = 'block';
+            formMessagesDiv.innerHTML = `<ul class="messages"><li class="${type}">${message}</li></ul>`;
+            // Clear message after a few seconds
+            setTimeout(() => {
+                formMessagesDiv.style.display = 'none';
+                formMessagesDiv.innerHTML = '';
+            }, 5000); 
+        }
+
+        function clearFormErrors() {
+            document.querySelectorAll('#donation-form .errorlist').forEach(el => el.textContent = '');
+            document.querySelectorAll('#donation-form .is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        }
+
+        function updateDonationsDisplay(data) {
+            totalDonationsElem.textContent = `₹${parseFloat(data.total_donations).toFixed(2)}`; // CHANGE HERE
+            
+            recentDonationsList.innerHTML = ''; // Clear existing list
+            if (data.recent_donations.length === 0) {
+                recentDonationsList.innerHTML = '<li>No recent donations yet. Be the first!</li>';
+            } else {
+                data.recent_donations.forEach(donation => {
+                    const li = document.createElement('li');
+                    const donorInfo = donation.donor_name || 'Anonymous'; // Handles null or empty string
+                    let messageText = donation.message ? `<br><small>"${donation.message.substring(0, 50)}${donation.message.length > 50 ? '...' : ''}"</small>` : '';
+                    li.innerHTML = `
+                        <strong>₹${parseFloat(donation.amount).toFixed(2)}</strong> by {# CHANGE HERE #}
+                        ${donation.is_anonymous ? 'Anonymous' : donorInfo} 
+                        <span class="donation-timestamp">(${donation.timestamp})</span>
+                        ${messageText}
+                    `;
+                    recentDonationsList.appendChild(li);
+                });
+            }
+        }
+
+        // Function to fetch updated donation data from the API
+        async function fetchDonationsData() {
+            try {
+                const response = await fetch('{% url "api_donations_data" %}');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDonationsDisplay(data);
+                } else {
+                    console.error('Failed to fetch donation data:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching donation data:', error);
+            }
+        }
+
+        // Handle form submission via AJAX
+        donationForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            clearFormErrors(); // Clear previous errors
+
+            const formData = new FormData(donationForm);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value; // Get CSRF token
+
+            try {
+                const response = await fetch(donationForm.action, {
+                    method: 'POST',
+                    body: formData, // FormData handles 'multipart/form-data' and files (if any)
+                    headers: {
+                        'X-CSRFToken': csrfToken // Important for Django's CSRF protection
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) { // Status 200-299 indicates success
+                    displayFormMessage(data.message, 'success');
+                    donationForm.reset(); // Clear the form fields
+                    fetchDonationsData(); // Immediately update the display with the new donation
+                } else { // Handle errors (e.g., status 400 Bad Request from form.errors)
+                    displayFormMessage('Error: ' + (data.message || 'Please correct the errors below.'), 'error');
+                    if (data.errors) {
+                        const errors = JSON.parse(data.errors);
+                        for (const fieldName in errors) {
+                            const fieldElem = donationForm.querySelector(`[name="${fieldName}"]`);
+                            if (fieldElem) {
+                                // Add error class and display messages
+                                fieldElem.classList.add('is-invalid');
+                                let errorContainer = fieldElem.nextElementSibling;
+                                if (!errorContainer || !errorContainer.classList.contains('errorlist')) {
+                                    errorContainer = document.createElement('span');
+                                    errorContainer.classList.add('errorlist');
+                                    // Insert after the field, or append to parent if no next sibling
+                                    if (fieldElem.parentNode) {
+                                        fieldElem.parentNode.insertBefore(errorContainer, fieldElem.nextSibling);
+                                    }
+                                }
+                                errorContainer.textContent = errors[fieldName].map(err => err.message).join(' ');
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Network or unexpected error:', error);
+                displayFormMessage('An unexpected error occurred. Please try again.', 'error');
+            }
+        });
+
+        // Initial fetch of donation data when the page loads
+        fetchDonationsData();
+
+        // Set up polling to fetch data every 10 seconds
+        setInterval(fetchDonationsData, 10000); // 10000 ms = 10 seconds
+
+    </script>
+{% endblock %}

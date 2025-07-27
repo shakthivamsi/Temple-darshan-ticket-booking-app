@@ -1,0 +1,18 @@
+<!-- templates/temple_app/add_temple.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add New Temple{% endblock %}
+
+{% block content %}
+    <h1>Add a New Temple</h1>
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+
+            <button type="submit" class="btn btn-primary">Add Temple</button>
+        </form>
+    </div>
+{% endblock %}
